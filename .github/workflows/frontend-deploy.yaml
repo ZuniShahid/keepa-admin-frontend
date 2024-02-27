@@ -1,0 +1,44 @@
+name: frontend-deploy
+
+# This workflow is triggered on pushes to branch master.
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+
+      - name: Use Node.js 18.16.0
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.16.0
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Add env variables to .env
+        env:
+          VITE_API_HOST: ${{ vars.VITE_API_HOST }}
+        run: |
+          echo "VITE_API_HOST=${{env.VITE_API_HOST}}" > .env
+
+      - name: Test
+        run: yarn test
+
+      - name: Build
+        run: yarn build
+
+      - name: 'Authenticate with GCP'
+        uses: 'google-github-actions/auth@v1'
+        with:
+          credentials_json: ${{ secrets.APP_ENGINE_DEPLOY_SA_DEV }}
+
+      - name: 'Deploy to App engine'
+        uses: 'google-github-actions/deploy-appengine@v1'

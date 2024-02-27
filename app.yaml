@@ -1,0 +1,13 @@
+runtime: nodejs18
+
+service: keepa-admin-frontend
+
+handlers:
+  - url: /assets
+    static_dir: dist/assets
+  - url: /(.*\.(json|ico|js))$
+    static_files: dist/\1
+    upload: dist/.*\.(json|ico|js)$
+  - url: /.*
+    static_files: dist/index.html
+    upload: dist/index.html
